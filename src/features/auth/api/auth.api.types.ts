@@ -93,6 +93,7 @@ export interface RegisterPJApiRequest {
     nome: string;
     cpf: string;
   };
+  acceptTerms: boolean;
 }
 
 /** Data de sucesso do cadastro PJ */

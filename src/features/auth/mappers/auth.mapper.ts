@@ -39,5 +39,6 @@ export function mapRegisterPJToApiRequest(
       nome: data.representanteLegal.nome,
       cpf: data.representanteLegal.cpf,
     },
+    acceptTerms: data.acceptTerms,
   };
 }
