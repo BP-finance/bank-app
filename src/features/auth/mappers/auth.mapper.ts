@@ -20,6 +20,7 @@ export function mapRegisterPFToApiRequest(
     email: data.email,
     telefone: data.telefone,
     senha: data.senha,
+    acceptTerms: data.acceptTerms,
   };
 }
 

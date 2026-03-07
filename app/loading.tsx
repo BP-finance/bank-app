@@ -1,18 +1,23 @@
-import { useRouter } from "expo-router";
-import LottieView from "lottie-react-native";
+/**
+ * Tela de bootstrap do app.
+ * Verifica sessão, hidrata via /auth/me e redireciona para a rota correta.
+ */
+
+import { useSessionBootstrap } from "@/src/features/auth/hooks/useSessionBootstrap";
+import { Href, useRouter } from "expo-router";
 import { useEffect } from "react";
+import LottieView from "lottie-react-native";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function LoadingScreen() {
   const router = useRouter();
+  const { isBootstrapping, resolvedRoute } = useSessionBootstrap();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      router.replace("/(tabs)");
-    }, 3500); // tempo fake de verificação
-
-    return () => clearTimeout(timeout);
-  }, []);
+    if (!isBootstrapping && resolvedRoute) {
+      router.replace(resolvedRoute as Href);
+    }
+  }, [isBootstrapping, resolvedRoute, router]);
 
   return (
     <View style={styles.container}>

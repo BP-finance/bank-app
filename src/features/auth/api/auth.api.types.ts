@@ -68,6 +68,7 @@ export interface RegisterPFApiRequest {
   email: string;
   telefone: string;
   senha: string;
+  acceptTerms: boolean;
 }
 
 /** Data de sucesso do cadastro PF */

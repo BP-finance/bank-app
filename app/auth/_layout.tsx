@@ -31,6 +31,10 @@ export default function AuthLayout() {
         name="forgot-password"
         options={{ title: "Recuperar senha" }}
       />
+      <Stack.Screen
+        name="onboarding"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

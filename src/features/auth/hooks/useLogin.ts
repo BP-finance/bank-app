@@ -1,6 +1,7 @@
 /**
  * Hook de login.
  * Usa documento (CPF ou CNPJ) + senha.
+ * Navega conforme onboardingStatus retornado pela API.
  */
 
 import { useCallback, useState } from "react";
@@ -9,6 +10,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { loginService } from "../services/login.service";
 import type { LoginRequest } from "../types/login.types";
 import { AUTH_MESSAGES } from "../constants";
+import { resolveAuthRoute } from "../utils/resolve-auth-route.util";
 
 export function useLogin() {
   const router = useRouter();
@@ -24,7 +26,11 @@ export function useLogin() {
       try {
         const session = await loginService.execute(data);
         loginStore(session);
-        router.replace("/(tabs)" as Href);
+        const route = resolveAuthRoute({
+          isAuthenticated: true,
+          onboardingStatus: session.user.onboardingStatus,
+        });
+        router.replace(route as Href);
       } catch (e) {
         const msg = e instanceof Error ? e.message : AUTH_MESSAGES.LOGIN_ERROR;
         setError(msg);
