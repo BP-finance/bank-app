@@ -107,7 +107,7 @@ export function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Não tem conta? </Text>
-          <TouchableOpacity onPress={() => router.replace("/auth/register-type" as Href)}>
+          <TouchableOpacity onPress={() => router.replace("/auth/register" as Href)}>
             <Text style={styles.footerLink}>Cadastre-se</Text>
           </TouchableOpacity>
         </View>
