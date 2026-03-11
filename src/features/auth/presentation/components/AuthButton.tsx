@@ -58,8 +58,8 @@ export function AuthButton({
 const styles = StyleSheet.create({
   btn: {
     backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.lg,
+    paddingVertical: SPACING.lg,
+    borderRadius: RADIUS.xl,
     alignItems: "center",
   },
   btnOutline: {

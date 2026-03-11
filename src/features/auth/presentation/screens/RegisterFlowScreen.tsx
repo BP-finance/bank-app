@@ -5,10 +5,8 @@
  */
 
 import { Href, useRouter } from "expo-router";
-import { RegisterSplashPhase } from "../components/register-flow";
-import { RegisterFlowPhaseWelcome } from "../components/register-flow";
-import { RegisterStepLayout } from "../components/register-flow";
 import { useRegisterFlow } from "../../hooks/useRegisterFlow";
+import { RegisterFlowPhaseWelcome, RegisterSplashPhase, RegisterStepLayout } from "../components/register-flow";
 
 export function RegisterFlowScreen() {
   const router = useRouter();

@@ -65,8 +65,7 @@ export function RegisterFlowPhaseWelcome({ onSelectType, onGoToLogin }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: COLORS.background_white,
-    backgroundColor: "#F0F2F5",
+    backgroundColor: COLORS.background,
     padding: SPACING.xl,
     // justifyContent: "",
   },

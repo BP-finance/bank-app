@@ -12,12 +12,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import type { RegisterFlowFieldKey, RegisterFlowFormValues, StepConfig } from "../../../config/registerSteps.config";
 import { AuthButton } from "../AuthButton";
-import { RegisterStepProgress } from "./RegisterStepProgress";
 import { RegisterStepField } from "./RegisterStepField";
-import type { StepConfig } from "../../../config/registerSteps.config";
-import type { RegisterFlowFieldKey } from "../../../config/registerSteps.config";
-import type { RegisterFlowFormValues } from "../../../config/registerSteps.config";
+import { RegisterStepProgress } from "./RegisterStepProgress";
+
+
 
 type Props = {
   stepConfig: StepConfig[];
@@ -85,11 +85,7 @@ export function RegisterStepLayout({
         )}
 
         <View style={styles.actions}>
-          {canGoPrev && (
-            <TouchableOpacity style={styles.backBtn} onPress={onPrev}>
-              <Text style={styles.backText}>Voltar</Text>
-            </TouchableOpacity>
-          )}
+
           {isLastStep ? (
             <AuthButton
               title="Cadastrar"
@@ -103,6 +99,11 @@ export function RegisterStepLayout({
               onPress={onNext}
               style={styles.primaryBtn}
             />
+          )}           
+          {canGoPrev && (
+            <TouchableOpacity style={styles.backBtn} onPress={onPrev}>
+              <Text style={styles.backText}>Voltar</Text>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -120,8 +121,11 @@ export function RegisterStepLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   scroll: {
+    gap: SPACING.xxl,
+    justifyContent: "center",
     flexGrow: 1,
     padding: SPACING.xl,
     paddingTop: SPACING.xxxl,
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
     color: "#B91C1C",
   },
   actions: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: SPACING.md,
     alignItems: "center",
     marginTop: SPACING.lg,
@@ -159,6 +163,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   primaryBtn: {
+    width: "100%",
     flex: 1,
   },
   footer: {

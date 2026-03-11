@@ -3,7 +3,7 @@ import { SHADOWS } from "@/src/theme/shadows";
 
 export const DEFAULT_SCREEN_OPTIONS = {
   headerStyle: {
-    backgroundColor: COLORS.tabbarligth ,
+    backgroundColor: COLORS.background ,
   },
   headerTintColor: COLORS.darkcolor,
   headerBackTitle: "",

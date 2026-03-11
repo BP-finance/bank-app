@@ -17,17 +17,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { AuthButton } from "../components/AuthButton";
-import { AuthInput } from "../components/AuthInput";
+import { AUTH_MESSAGES } from "../../constants";
 import { useLogin } from "../../hooks";
 import { loginInitialValues } from "../../schemas";
 import { useAuthStore } from "../../store/useAuthStore";
 import {
   formatDocumentoDinamico,
-  sanitizeDocumento,
   isValidDocumentoLogin,
+  sanitizeDocumento,
 } from "../../utils";
-import { AUTH_MESSAGES } from "../../constants";
+import { AuthButton } from "../components/AuthButton";
+import { AuthInput } from "../components/AuthInput";
 
 export function LoginScreen() {
   const router = useRouter();
@@ -65,10 +65,7 @@ export function LoginScreen() {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Entrar</Text>
-        <Text style={styles.subtitle}>
-          Use seu CPF ou CNPJ e senha para acessar
-        </Text>
+        <Text style={styles.title}>Acesse sua conta</Text>
 
         {error && (
           <View style={styles.errorWrap}>
@@ -77,15 +74,16 @@ export function LoginScreen() {
         )}
 
         <AuthInput
-          label="CPF ou CNPJ"
+          // label="Acesse sua conta"
           value={documento}
           onChangeText={(v) => setDocumento(formatDocumentoDinamico(v))}
-          placeholder="000.000.000-00 ou 00.000.000/0000-00"
+          placeholder="Digite seu CPF ou CNPJ"
           keyboardType="numeric"
           error={documentoError}
         />
+        <Text style={styles.title}>Senha</Text>
         <AuthInput
-          label="Senha"
+          // label="Senha"
           value={senha}
           onChangeText={setSenha}
           placeholder="••••••••"
@@ -119,10 +117,11 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background_white,
+    backgroundColor: COLORS.background,
   },
   scroll: {
     flexGrow: 1,
+    justifyContent: "center",
     padding: SPACING.xl,
     paddingTop: SPACING.xxxl,
   },

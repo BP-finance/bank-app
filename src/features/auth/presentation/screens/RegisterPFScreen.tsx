@@ -18,19 +18,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { AuthButton } from "../components/AuthButton";
-import { AuthInput } from "../components/AuthInput";
+import { AUTH_MESSAGES } from "../../constants";
 import { useRegisterPF } from "../../hooks";
 import { registerPFInitialValues } from "../../schemas";
 import {
   formatCPF,
   formatPhone,
-  sanitizeDocumento,
-  sanitizePhone,
   isValidCPF,
   isValidPhone,
+  sanitizeDocumento,
+  sanitizePhone,
 } from "../../utils";
-import { AUTH_MESSAGES } from "../../constants";
+import { AuthButton } from "../components/AuthButton";
+import { AuthInput } from "../components/AuthInput";
 
 export function RegisterPFScreen() {
   const router = useRouter();
@@ -167,7 +167,7 @@ export function RegisterPFScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background_white,
+    backgroundColor: COLORS.background,
   },
   scroll: {
     flexGrow: 1,

@@ -33,7 +33,7 @@ export default function RegisterPixKeyScreen() {
   return (
     <SafeAreaView
       edges={["right", "bottom", "left"]}
-      style={{ flex: 1, backgroundColor: "#fff" }}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
     >
       <View style={{ flex: 1, paddingTop: 40 }}>
         {/* paddingTop: insets.top,
@@ -54,7 +54,7 @@ export default function RegisterPixKeyScreen() {
                 gap: 20,
                 paddingVertical: 30,
                 paddingHorizontal: 15,
-                backgroundColor: COLORS.tabbarligth,
+                backgroundColor: COLORS.background,
                 marginBottom: 12,
                 marginHorizontal: 20,
                 borderRadius: 12,
