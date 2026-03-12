@@ -3,6 +3,7 @@ import { PixKey } from "@/src/features/pix/domain/models/PixKey";
 import { PixKeyActionsBottomSheet } from "@/src/features/pix/presentation/components/PixKeyActionsBottomSheet";
 import { usePixStore } from "@/src/features/pix/store/pix.store";
 import { COLORS } from "@/src/theme/colors";
+import { RADIUS } from "@/src/theme/radius";
 import { SHADOWS } from "@/src/theme/shadows";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -130,7 +131,7 @@ export default function AreaPixScreen() {
           style={{
             margin: 15,
             padding: 15,
-            borderRadius: 12,
+            borderRadius: RADIUS.xl,
             backgroundColor: COLORS.primary,
             alignItems: "center",
           }}
