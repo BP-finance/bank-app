@@ -1,6 +1,13 @@
 /**
  * Hook central do fluxo de cadastro step-by-step.
  * Orquestra fases, steps e submissão, chamando services diretamente.
+ * Suporta múltiplos campos por etapa.
+ * 
+ * Validação em 3 níveis:
+ * 1. validateField() — validação de campo individual
+ * 2. validateStep() — validação de todos os campos de uma etapa
+ * 3. validateAllSteps() — validação final de todo o fluxo antes do submit
+ * 
  * screen → hook → service
  */
 
@@ -9,6 +16,7 @@ import { Href, useRouter } from "expo-router";
 import {
   getRegisterStepsConfig,
   REGISTER_FLOW_INITIAL_VALUES,
+  type FieldConfig,
   type RegisterFlowFieldKey,
   type RegisterFlowFormValues,
   type StepConfig,
@@ -27,6 +35,11 @@ import {
 } from "../utils";
 
 export type RegisterPhase = "splash" | "welcome" | "steps";
+
+interface ValidationResult {
+  errors: Partial<Record<RegisterFlowFieldKey, string>>;
+  firstInvalidStepIndex: number | null;
+}
 
 export function useRegisterFlow() {
   const router = useRouter();
@@ -61,31 +74,46 @@ export function useRegisterFlow() {
     });
   }, []);
 
-  const validateStep = useCallback(
-    (step: StepConfig): string | null => {
-      const value = formValues[step.id];
+  /**
+   * Nível 1: Validação de campo individual
+   * Cada campo tem sua regra específica de validação.
+   * Reutiliza validadores existentes: isValidCPF, isValidCNPJ, isValidPhone
+   */
+  const validateField = useCallback(
+    (field: FieldConfig, values: RegisterFlowFormValues = formValues): string | null => {
+      const value = values[field.id];
       const str = typeof value === "string" ? value : "";
 
-      switch (step.id) {
+      if (field.optional && str.trim().length === 0) {
+        return null;
+      }
+
+      switch (field.id) {
         case "nomeCompleto":
         case "razaoSocial":
         case "representanteNome":
           return str.trim().length > 0 ? null : "Campo obrigatório";
         case "nomeFantasia":
-          return null; // opcional
+          return null;
         case "cpf":
         case "representanteCpf":
+          if (str.trim().length === 0) return "Campo obrigatório";
           return isValidCPF(str) ? null : AUTH_MESSAGES.CPF_INVALIDO;
         case "cnpj":
+          if (str.trim().length === 0) return "Campo obrigatório";
           return isValidCNPJ(str) ? null : AUTH_MESSAGES.CNPJ_INVALIDO;
         case "email":
+          if (str.trim().length === 0) return "Campo obrigatório";
           return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str.trim()) ? null : "E-mail inválido";
         case "telefone":
+          if (str.trim().length === 0) return "Campo obrigatório";
           return isValidPhone(str) ? null : AUTH_MESSAGES.TELEFONE_INVALIDO;
         case "senha":
+          if (str.length === 0) return "Campo obrigatório";
           return str.length >= 8 ? null : "Mínimo 8 caracteres";
         case "confirmarSenha":
-          return str === formValues.senha ? null : "Senhas não conferem";
+          if (str.length === 0) return "Campo obrigatório";
+          return str === values.senha ? null : "Senhas não conferem";
         case "acceptTerms":
           return value === true ? null : "Aceite os termos para continuar";
         default:
@@ -95,11 +123,57 @@ export function useRegisterFlow() {
     [formValues]
   );
 
+  /**
+   * Nível 2: Validação de etapa
+   * Valida todos os campos de uma etapa específica.
+   * Inclui validações compostas (ex: senha === confirmarSenha)
+   */
+  const validateStep = useCallback(
+    (step: StepConfig, values: RegisterFlowFormValues = formValues): Partial<Record<RegisterFlowFieldKey, string>> => {
+      const errors: Partial<Record<RegisterFlowFieldKey, string>> = {};
+      
+      for (const field of step.fields) {
+        const err = validateField(field, values);
+        if (err) {
+          errors[field.id] = err;
+        }
+      }
+
+      return errors;
+    },
+    [validateField]
+  );
+
+  /**
+   * Nível 3: Validação final de todo o fluxo
+   * Revalida TODAS as etapas antes do submit.
+   * Retorna erros e o índice da primeira etapa inválida.
+   */
+  const validateAllSteps = useCallback(
+    (steps: StepConfig[], values: RegisterFlowFormValues = formValues): ValidationResult => {
+      const allErrors: Partial<Record<RegisterFlowFieldKey, string>> = {};
+      let firstInvalidStepIndex: number | null = null;
+
+      for (let i = 0; i < steps.length; i++) {
+        const stepErrors = validateStep(steps[i], values);
+        if (Object.keys(stepErrors).length > 0) {
+          Object.assign(allErrors, stepErrors);
+          if (firstInvalidStepIndex === null) {
+            firstInvalidStepIndex = i;
+          }
+        }
+      }
+
+      return { errors: allErrors, firstInvalidStepIndex };
+    },
+    [validateStep]
+  );
+
   const goNextStep = useCallback(() => {
     if (!currentStep) return;
-    const err = validateStep(currentStep);
-    if (err) {
-      setFieldErrors((prev) => ({ ...prev, [currentStep.id]: err }));
+    const errors = validateStep(currentStep);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errors }));
       return;
     }
     if (currentStepIndex < totalSteps - 1) {
@@ -120,10 +194,15 @@ export function useRegisterFlow() {
   const submit = useCallback(async () => {
     if (!personType || !stepConfig) return;
 
-    const lastStep = stepConfig[stepConfig.length - 1];
-    const lastErr = validateStep(lastStep);
-    if (lastErr) {
-      setFieldErrors((prev) => ({ ...prev, [lastStep.id]: lastErr }));
+    const { errors, firstInvalidStepIndex } = validateAllSteps(stepConfig, formValues);
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      
+      if (firstInvalidStepIndex !== null && firstInvalidStepIndex !== currentStepIndex) {
+        setCurrentStepIndex(firstInvalidStepIndex);
+        setSubmitError("Corrija os campos inválidos para continuar");
+      }
       return;
     }
 
@@ -165,7 +244,7 @@ export function useRegisterFlow() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [personType, stepConfig, formValues, validateStep, router]);
+  }, [personType, stepConfig, formValues, validateAllSteps, currentStepIndex, router]);
 
   return {
     phase,

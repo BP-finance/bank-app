@@ -9,17 +9,17 @@ import { TYPOGRAPHY } from "@/src/theme/typography";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { AuthInput } from "../AuthInput";
 import { formatCPF, formatCNPJ, formatPhone } from "../../../utils";
-import type { StepConfig } from "../../../config/registerSteps.config";
+import type { FieldConfig } from "../../../config/registerSteps.config";
 
 type Props = {
-  step: StepConfig;
+  field: FieldConfig;
   value: string | boolean;
   error?: string;
   onChange: (value: string | boolean) => void;
 };
 
-export function RegisterStepField({ step, value, error, onChange }: Props) {
-  if (step.fieldType === "terms") {
+export function RegisterStepField({ field, value, error, onChange }: Props) {
+  if (field.fieldType === "terms") {
     return (
       <View style={styles.row}>
         <Switch
@@ -28,7 +28,7 @@ export function RegisterStepField({ step, value, error, onChange }: Props) {
           trackColor={{ false: "#CBD5E1", true: COLORS.primary }}
           thumbColor="#fff"
         />
-        <Text style={styles.termsText}>{step.label}</Text>
+        <Text style={styles.termsText}>{field.label}</Text>
       </View>
     );
   }
@@ -36,9 +36,9 @@ export function RegisterStepField({ step, value, error, onChange }: Props) {
   const str = typeof value === "string" ? value : "";
 
   const handleChange = (v: string) => {
-    if (step.fieldType === "document" && step.documentVariant) {
-      onChange(step.documentVariant === "cpf" ? formatCPF(v) : formatCNPJ(v));
-    } else if (step.fieldType === "phone") {
+    if (field.fieldType === "document" && field.documentVariant) {
+      onChange(field.documentVariant === "cpf" ? formatCPF(v) : formatCNPJ(v));
+    } else if (field.fieldType === "phone") {
       onChange(formatPhone(v));
     } else {
       onChange(v);
@@ -47,13 +47,13 @@ export function RegisterStepField({ step, value, error, onChange }: Props) {
 
   return (
     <AuthInput
-      label={step.label}
+      label={field.label}
       value={str}
       onChangeText={handleChange}
-      placeholder={step.placeholder}
-      keyboardType={step.fieldType === "document" || step.fieldType === "phone" ? "numeric" : undefined}
-      autoCapitalize={step.fieldType === "email" ? "none" : undefined}
-      secureTextEntry={step.fieldType === "password"}
+      placeholder={field.placeholder}
+      keyboardType={field.fieldType === "document" || field.fieldType === "phone" ? "numeric" : undefined}
+      autoCapitalize={field.fieldType === "email" ? "none" : undefined}
+      secureTextEntry={field.fieldType === "password"}
       error={error}
     />
   );

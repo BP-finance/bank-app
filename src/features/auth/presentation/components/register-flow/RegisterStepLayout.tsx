@@ -1,5 +1,6 @@
 /**
- * Layout do step form: progress bar + campo atual + botões.
+ * Layout do step form: progress bar + campos da etapa atual + botões.
+ * Suporta múltiplos campos por etapa.
  */
 
 import { SPACING } from "@/src/theme/spacing";
@@ -16,8 +17,6 @@ import type { RegisterFlowFieldKey, RegisterFlowFormValues, StepConfig } from ".
 import { AuthButton } from "../AuthButton";
 import { RegisterStepField } from "./RegisterStepField";
 import { RegisterStepProgress } from "./RegisterStepProgress";
-
-
 
 type Props = {
   stepConfig: StepConfig[];
@@ -66,8 +65,12 @@ export function RegisterStepLayout({
         />
 
         <Text style={styles.title}>
-          {isLastStep ? "Revise e finalize" : currentStep?.label}
+          {isLastStep ? "Revise e finalize" : currentStep?.title}
         </Text>
+
+        {currentStep?.description && (
+          <Text style={styles.description}>{currentStep.description}</Text>
+        )}
 
         {submitError && (
           <View style={styles.errorWrap}>
@@ -75,17 +78,19 @@ export function RegisterStepLayout({
           </View>
         )}
 
-        {currentStep && (
-          <RegisterStepField
-            step={currentStep}
-            value={formValues[currentStep.id]}
-            error={fieldErrors[currentStep.id]}
-            onChange={(v) => onSetFieldValue(currentStep.id, v)}
-          />
-        )}
+        <View style={styles.fieldsContainer}>
+          {currentStep?.fields.map((field) => (
+            <RegisterStepField
+              key={field.id}
+              field={field}
+              value={formValues[field.id]}
+              error={fieldErrors[field.id]}
+              onChange={(v) => onSetFieldValue(field.id, v)}
+            />
+          ))}
+        </View>
 
         <View style={styles.actions}>
-
           {isLastStep ? (
             <AuthButton
               title="Cadastrar"
@@ -99,7 +104,7 @@ export function RegisterStepLayout({
               onPress={onNext}
               style={styles.primaryBtn}
             />
-          )}           
+          )}
           {canGoPrev && (
             <TouchableOpacity style={styles.backBtn} onPress={onPrev}>
               <Text style={styles.backText}>Voltar</Text>
@@ -124,7 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   scroll: {
-    gap: SPACING.xxl,
+    gap: SPACING.lg,
     justifyContent: "center",
     flexGrow: 1,
     padding: SPACING.xl,
@@ -135,17 +140,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#131313",
-    marginBottom: SPACING.lg,
+  },
+  description: {
+    fontSize: 14,
+    color: "#64748B",
+    marginTop: -SPACING.sm,
   },
   errorWrap: {
     backgroundColor: "#FEE2E2",
     padding: SPACING.md,
     borderRadius: 8,
-    marginBottom: SPACING.lg,
   },
   errorText: {
     fontSize: 14,
     color: "#B91C1C",
+  },
+  fieldsContainer: {
+    gap: SPACING.md,
   },
   actions: {
     flexDirection: "column",
