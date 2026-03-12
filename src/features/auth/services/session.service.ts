@@ -1,5 +1,8 @@
 /**
- * Serviço de gerenciamento de sessão.
+ * @deprecated Use sessionManager de ../session em vez deste arquivo.
+ * Este arquivo será removido em versão futura.
+ *
+ * Serviço de gerenciamento de sessão (LEGADO).
  * Responsável por:
  * - Salvar tokens no storage seguro
  * - Limpar tokens no logout

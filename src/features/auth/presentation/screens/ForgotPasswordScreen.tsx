@@ -1,6 +1,9 @@
 /**
  * Tela de recuperação de senha.
  * Usa documento (CPF ou CNPJ).
+ *
+ * Responsabilidade: apenas UI.
+ * Validação e sanitização são feitas pelo hook useForgotPassword.
  */
 
 import { COLORS } from "@/src/theme/colors";
@@ -20,10 +23,12 @@ import { AuthButton } from "../components/AuthButton";
 import { AuthInput } from "../components/AuthInput";
 import { useForgotPassword } from "../../hooks";
 import { forgotPasswordInitialValues } from "../../schemas";
+import { formatDocumentoDinamico } from "../../utils";
 
 export function ForgotPasswordScreen() {
   const router = useRouter();
-  const { submit, isSubmitting, error, success } = useForgotPassword();
+  const { submit, isSubmitting, error, validationErrors, success, clearErrors } =
+    useForgotPassword();
   const [documento, setDocumento] = useState(
     forgotPasswordInitialValues.documento
   );
@@ -32,7 +37,14 @@ export function ForgotPasswordScreen() {
     try {
       await submit({ documento });
     } catch {
-      // erro tratado no hook
+      // erro já tratado no hook
+    }
+  };
+
+  const handleDocumentoChange = (value: string) => {
+    setDocumento(formatDocumentoDinamico(value));
+    if (validationErrors?.documento) {
+      clearErrors();
     }
   };
 
@@ -45,10 +57,7 @@ export function ForgotPasswordScreen() {
             Se existe uma conta com esse documento, você receberá as instruções
             para redefinir sua senha.
           </Text>
-          <AuthButton
-            title="Voltar ao login"
-            onPress={() => router.back()}
-          />
+          <AuthButton title="Voltar ao login" onPress={() => router.back()} />
         </View>
       </View>
     );
@@ -70,16 +79,17 @@ export function ForgotPasswordScreen() {
 
         {error && (
           <View style={styles.errorWrap}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorText}>{error.message}</Text>
           </View>
         )}
 
         <AuthInput
           label="CPF ou CNPJ"
           value={documento}
-          onChangeText={setDocumento}
-          placeholder="Somente números"
+          onChangeText={handleDocumentoChange}
+          placeholder="Digite seu CPF ou CNPJ"
           keyboardType="numeric"
+          error={validationErrors?.documento}
         />
 
         <AuthButton

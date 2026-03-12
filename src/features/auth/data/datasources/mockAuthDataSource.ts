@@ -1,5 +1,6 @@
 /**
  * Data source mock para testes manuais sem backend.
+ * Usa AuthError para erros tipados.
  */
 
 import type {
@@ -18,6 +19,7 @@ import {
   getMockScenarioByDocumento,
   scenarioToApiUser,
 } from "../mocks/mockAuthScenarios";
+import { authErrorFactory } from "../../errors";
 
 const MOCK_DELAY_MS = 300;
 const MOCK_LOGIN_ERROR_DOC = "00000000000";
@@ -42,14 +44,14 @@ export const mockAuthDataSource: AuthDataSource = {
     await delay(MOCK_DELAY_MS);
     const doc = data.documento.replace(/\D/g, "");
     if (doc === MOCK_LOGIN_ERROR_DOC) {
-      throw new Error("Credenciais inválidas.");
+      throw authErrorFactory.invalidCredentials();
     }
     const scenario = getMockScenarioByDocumento(data.documento);
     if (!scenario) {
-      throw new Error("Credenciais inválidas.");
+      throw authErrorFactory.invalidCredentials();
     }
     if (scenario.senha !== data.senha) {
-      throw new Error("Credenciais inválidas.");
+      throw authErrorFactory.invalidCredentials();
     }
     const user = scenarioToApiUser(scenario);
     return {
@@ -101,7 +103,7 @@ export const mockAuthDataSource: AuthDataSource = {
     await delay(MOCK_DELAY_MS);
     const doc = data.documento.replace(/\D/g, "");
     if (doc === MOCK_LOGIN_ERROR_DOC) {
-      throw new Error("Usuário não encontrado.");
+      throw authErrorFactory.userNotFound();
     }
     return { message: "Solicitação recebida com sucesso." };
   },
@@ -110,11 +112,11 @@ export const mockAuthDataSource: AuthDataSource = {
     await delay(MOCK_DELAY_MS);
     const doc = extractDocumentoFromToken(accessToken);
     if (!doc) {
-      throw new Error("Sessão inválida ou expirada.");
+      throw authErrorFactory.sessionExpired();
     }
     const scenario = getMockScenarioByDocumento(doc);
     if (!scenario) {
-      throw new Error("Sessão inválida ou expirada.");
+      throw authErrorFactory.sessionExpired();
     }
     return scenarioToApiUser(scenario, `mock-user-${doc}`);
   },

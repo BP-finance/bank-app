@@ -1,6 +1,9 @@
 /**
  * Tela de login.
  * Usa documento (CPF ou CNPJ) + senha.
+ *
+ * Responsabilidade: apenas UI.
+ * Validação e sanitização são feitas pelo hook useLogin.
  */
 
 import { COLORS } from "@/src/theme/colors";
@@ -17,42 +20,39 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { AUTH_MESSAGES } from "../../constants";
 import { useLogin } from "../../hooks";
 import { loginInitialValues } from "../../schemas";
-import { useAuthStore } from "../../store/useAuthStore";
-import {
-  formatDocumentoDinamico,
-  isValidDocumentoLogin,
-  sanitizeDocumento,
-} from "../../utils";
+import { formatDocumentoDinamico } from "../../utils";
 import { AuthButton } from "../components/AuthButton";
 import { AuthInput } from "../components/AuthInput";
 
 export function LoginScreen() {
   const router = useRouter();
-  const { login, isSubmitting } = useLogin();
-  const error = useAuthStore((s) => s.error);
-  const clearError = useAuthStore((s) => s.clearError);
+  const { login, isSubmitting, error, validationErrors, clearErrors } =
+    useLogin();
 
   const [documento, setDocumento] = useState(loginInitialValues.documento);
   const [senha, setSenha] = useState(loginInitialValues.senha);
-  const [documentoError, setDocumentoError] = useState<string | undefined>();
 
   const handleSubmit = async () => {
-    clearError();
-    setDocumentoError(undefined);
-    if (!isValidDocumentoLogin(documento)) {
-      setDocumentoError(AUTH_MESSAGES.DOCUMENTO_INVALIDO);
-      return;
-    }
     try {
-      await login({
-        documento: sanitizeDocumento(documento),
-        senha,
-      });
+      await login({ documento, senha });
     } catch {
-      // erro tratado no store
+      // erro já tratado no hook
+    }
+  };
+
+  const handleDocumentoChange = (value: string) => {
+    setDocumento(formatDocumentoDinamico(value));
+    if (validationErrors?.documento) {
+      clearErrors();
+    }
+  };
+
+  const handleSenhaChange = (value: string) => {
+    setSenha(value);
+    if (validationErrors?.senha) {
+      clearErrors();
     }
   };
 
@@ -69,25 +69,24 @@ export function LoginScreen() {
 
         {error && (
           <View style={styles.errorWrap}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorText}>{error.message}</Text>
           </View>
         )}
 
         <AuthInput
-          // label="Acesse sua conta"
           value={documento}
-          onChangeText={(v) => setDocumento(formatDocumentoDinamico(v))}
+          onChangeText={handleDocumentoChange}
           placeholder="Digite seu CPF ou CNPJ"
           keyboardType="numeric"
-          error={documentoError}
+          error={validationErrors?.documento}
         />
         <Text style={styles.title}>Senha</Text>
         <AuthInput
-          // label="Senha"
           value={senha}
-          onChangeText={setSenha}
+          onChangeText={handleSenhaChange}
           placeholder="••••••••"
           secureTextEntry
+          error={validationErrors?.senha}
         />
 
         <TouchableOpacity
@@ -105,7 +104,9 @@ export function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Não tem conta? </Text>
-          <TouchableOpacity onPress={() => router.replace("/auth/register" as Href)}>
+          <TouchableOpacity
+            onPress={() => router.replace("/auth/register" as Href)}
+          >
             <Text style={styles.footerLink}>Cadastre-se</Text>
           </TouchableOpacity>
         </View>

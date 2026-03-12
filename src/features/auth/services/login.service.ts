@@ -1,11 +1,11 @@
 /**
  * Serviço de login.
- * Orquestra: datasource → mapper → session service → retorno.
+ * Orquestra: datasource → mapper → sessionManager → retorno.
  */
 
 import { authDataSourceFactory } from "../data/datasources/authDataSourceFactory";
 import { mapLoginDataToSession } from "../mappers/session.mapper";
-import { sessionService } from "./session.service";
+import { sessionManager } from "../session";
 import type { LoginRequest } from "../types/login.types";
 import type { AuthSession } from "../types/auth-session.types";
 
@@ -17,7 +17,7 @@ export const loginService = {
       senha: data.senha,
     });
     const session = mapLoginDataToSession(apiData);
-    await sessionService.persistSession(session);
+    await sessionManager.persist(session);
     return session;
   },
 };
