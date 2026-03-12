@@ -1,8 +1,11 @@
 /**
  * Layout do step form: progress bar + campos da etapa atual + botões.
  * Suporta múltiplos campos por etapa.
+ * Campos entram com animação FadeInLeft + stagger.
  */
 
+import { FadeInLeft } from "@/src/shared/components/animations";
+import { COLORS } from "@/src/theme/colors";
 import { SPACING } from "@/src/theme/spacing";
 import {
   KeyboardAvoidingView,
@@ -33,6 +36,8 @@ type Props = {
   onGoToLogin: () => void;
 };
 
+const STAGGER_DELAY = 80;
+
 export function RegisterStepLayout({
   stepConfig,
   currentStepIndex,
@@ -60,16 +65,20 @@ export function RegisterStepLayout({
         keyboardShouldPersistTaps="handled"
       >
         <RegisterStepProgress
-          currentStep={currentStepIndex}
-          totalSteps={stepConfig.length}
+          currentStepIndex={currentStepIndex}
+          steps={stepConfig}
         />
 
-        <Text style={styles.title}>
-          {isLastStep ? "Revise e finalize" : currentStep?.title}
-        </Text>
+        <FadeInLeft key={`title-${currentStepIndex}`} delay={0} distance={16}>
+          <Text style={styles.title}>
+            {isLastStep ? "Revise e finalize" : currentStep?.title}
+          </Text>
+        </FadeInLeft>
 
         {currentStep?.description && (
-          <Text style={styles.description}>{currentStep.description}</Text>
+          <FadeInLeft key={`desc-${currentStepIndex}`} delay={STAGGER_DELAY} distance={16}>
+            <Text style={styles.description}>{currentStep.description}</Text>
+          </FadeInLeft>
         )}
 
         {submitError && (
@@ -79,38 +88,56 @@ export function RegisterStepLayout({
         )}
 
         <View style={styles.fieldsContainer}>
-          {currentStep?.fields.map((field) => (
-            <RegisterStepField
-              key={field.id}
-              field={field}
-              value={formValues[field.id]}
-              error={fieldErrors[field.id]}
-              onChange={(v) => onSetFieldValue(field.id, v)}
-            />
-          ))}
+          {currentStep?.fields.map((field, fieldIndex) => {
+            const baseDelay = currentStep.description 
+              ? STAGGER_DELAY * 2 
+              : STAGGER_DELAY;
+            const fieldDelay = baseDelay + (fieldIndex * STAGGER_DELAY);
+
+            return (
+              <FadeInLeft
+                key={`${currentStepIndex}-${field.id}`}
+                delay={fieldDelay}
+                distance={16}
+              >
+                <RegisterStepField
+                  field={field}
+                  value={formValues[field.id]}
+                  error={fieldErrors[field.id]}
+                  onChange={(v) => onSetFieldValue(field.id, v)}
+                />
+              </FadeInLeft>
+            );
+          })}
         </View>
 
-        <View style={styles.actions}>
-          {isLastStep ? (
-            <AuthButton
-              title="Cadastrar"
-              onPress={onSubmit}
-              loading={isSubmitting}
-              style={styles.primaryBtn}
-            />
-          ) : (
-            <AuthButton
-              title="Continuar"
-              onPress={onNext}
-              style={styles.primaryBtn}
-            />
-          )}
-          {canGoPrev && (
-            <TouchableOpacity style={styles.backBtn} onPress={onPrev}>
-              <Text style={styles.backText}>Voltar</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <FadeInLeft
+          key={`actions-${currentStepIndex}`}
+          delay={STAGGER_DELAY * (2 + (currentStep?.fields.length ?? 0))}
+          distance={16}
+        >
+          <View style={styles.actions}>
+            {isLastStep ? (
+              <AuthButton
+                title="Cadastrar"
+                onPress={onSubmit}
+                loading={isSubmitting}
+                style={styles.primaryBtn}
+              />
+            ) : (
+              <AuthButton
+                title="Continuar"
+                onPress={onNext}
+                style={styles.primaryBtn}
+              />
+            )}
+            {canGoPrev && (
+              <TouchableOpacity style={styles.backBtn} onPress={onPrev}>
+                <Text style={styles.backText}>Voltar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </FadeInLeft>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Já tem conta? </Text>
@@ -126,7 +153,7 @@ export function RegisterStepLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background_white,
   },
   scroll: {
     gap: SPACING.lg,
@@ -137,13 +164,13 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#131313",
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.darkcolor,
   },
   description: {
     fontSize: 14,
-    color: "#64748B",
+    color: COLORS.textSecondary,
     marginTop: -SPACING.sm,
   },
   errorWrap: {
@@ -171,7 +198,7 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#64748B",
+    color: COLORS.textSecondary,
   },
   primaryBtn: {
     width: "100%",
@@ -184,11 +211,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: "#94A3B8",
+    color: COLORS.textSecondary,
   },
   footerLink: {
     fontSize: 14,
-    color: "#EB0459",
+    color: COLORS.primary,
     fontWeight: "600",
   },
 });
