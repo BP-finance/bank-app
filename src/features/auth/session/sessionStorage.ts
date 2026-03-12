@@ -15,20 +15,26 @@ export const sessionStorage = {
   async saveTokens(tokens: TokensPayload): Promise<void> {
     await secureStorageService.setTokens(
       tokens.accessToken,
-      tokens.refreshToken
+      tokens.refreshToken,
+      tokens.expiresAt
     );
   },
 
   /**
    * Recupera tokens do storage seguro.
-   * @returns Objeto com accessToken e refreshToken (podem ser null).
+   * @returns Objeto com accessToken, refreshToken e expiresAt (podem ser null/undefined).
    */
   async getTokens(): Promise<StoredTokens> {
-    const [accessToken, refreshToken] = await Promise.all([
+    const [accessToken, refreshToken, expiresAt] = await Promise.all([
       secureStorageService.getAccessToken(),
       secureStorageService.getRefreshToken(),
+      secureStorageService.getExpiresAt(),
     ]);
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt: expiresAt ?? undefined,
+    };
   },
 
   /**

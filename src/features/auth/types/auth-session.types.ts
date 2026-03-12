@@ -21,4 +21,6 @@ export interface AuthSession {
   accessToken: string;
   refreshToken?: string;
   user: AuthenticatedUser;
+  /** Timestamp (ms) em que o access token expira (opcional) */
+  expiresAt?: number;
 }

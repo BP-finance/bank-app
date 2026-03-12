@@ -19,6 +19,7 @@ import type {
 } from "./session.types";
 import { sessionStorage } from "./sessionStorage";
 import { sessionHydrator } from "./sessionHydrator";
+import { isSessionExpired } from "./sessionExpirationService";
 
 export const sessionManager = {
   /**
@@ -31,6 +32,7 @@ export const sessionManager = {
     const tokens: TokensPayload = {
       accessToken: session.accessToken,
       refreshToken: session.refreshToken ?? "",
+      expiresAt: session.expiresAt,
     };
     await sessionStorage.saveTokens(tokens);
   },
@@ -88,6 +90,18 @@ export const sessionManager = {
         error: {
           code: "NO_STORED_TOKENS" as SessionErrorCode,
           message: "Nenhum token armazenado encontrado.",
+        },
+      };
+    }
+
+    if (isSessionExpired(tokens)) {
+      await sessionStorage.clearTokens();
+      return {
+        success: false,
+        session: null,
+        error: {
+          code: "TOKEN_EXPIRED" as SessionErrorCode,
+          message: "Sessão expirada.",
         },
       };
     }

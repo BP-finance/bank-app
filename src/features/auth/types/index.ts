@@ -11,6 +11,11 @@ export type { RegisterPJRequest } from "./register-pj.types";
 export type { LoginRequest } from "./login.types";
 export type { ForgotPasswordRequest } from "./forgot-password.types";
 export type {
+  RefreshResult,
+  RefreshSuccess,
+  RefreshFailure,
+} from "./refresh-token.types";
+export type {
   AuthSession,
   AuthenticatedUser,
   AuthUser,

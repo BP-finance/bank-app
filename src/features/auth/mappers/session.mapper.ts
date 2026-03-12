@@ -19,9 +19,14 @@ export function mapApiUserToAuthenticatedUser(api: ApiUser): AuthenticatedUser {
 }
 
 export function mapLoginDataToSession(data: LoginApiData): AuthSession {
+  const expiresAt =
+    data.expiresIn != null
+      ? Date.now() + data.expiresIn * 1000
+      : undefined;
   return {
     accessToken: data.accessToken,
     refreshToken: data.refreshToken,
     user: mapApiUserToAuthenticatedUser(data.user),
+    expiresAt,
   };
 }

@@ -10,6 +10,7 @@
 export { sessionManager } from "./sessionManager";
 export { sessionStorage } from "./sessionStorage";
 export { sessionHydrator } from "./sessionHydrator";
+export { isSessionExpired } from "./sessionExpirationService";
 
 // Tipos puros (interfaces) - export type
 export type {

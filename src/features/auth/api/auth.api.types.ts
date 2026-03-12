@@ -45,6 +45,8 @@ export interface LoginApiData {
   accessToken: string;
   refreshToken: string;
   user: ApiUser;
+  /** Tempo em segundos até expiração (opcional; backend pode não retornar) */
+  expiresIn?: number;
 }
 
 export type LoginApiResponse = ApiSuccessResponse<LoginApiData>;
@@ -108,3 +110,18 @@ export type RegisterPJApiResponse = ApiSuccessResponse<RegisterPJApiData>;
 
 /** Data retornada por GET /auth/me */
 export type MeApiResponse = ApiSuccessResponse<ApiUser>;
+
+/** Payload de refresh token (futuro: POST /auth/refresh) */
+export interface RefreshApiRequest {
+  refreshToken: string;
+}
+
+/** Data de sucesso do refresh (futuro) */
+export interface RefreshApiData {
+  accessToken: string;
+  refreshToken: string;
+  /** Tempo em segundos até expiração (opcional) */
+  expiresIn?: number;
+}
+
+export type RefreshApiResponse = ApiSuccessResponse<RefreshApiData>;
