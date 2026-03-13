@@ -8,6 +8,7 @@
 
 import { create } from "zustand";
 import type { AuthSession } from "../types/auth-session.types";
+import type { SessionError } from "../session/session.types";
 import { sessionManager } from "../session";
 import { AuthError } from "../errors";
 
@@ -18,6 +19,7 @@ type AuthState = {
   isInitialized: boolean;
   error: string | null;
   authError: AuthError | null;
+  restoreError: SessionError | null;
 
   setSession: (session: AuthSession | null) => void;
   setLoading: (loading: boolean) => void;
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   isInitialized: false,
   error: null,
   authError: null,
+  restoreError: null,
 
   setSession: (session) =>
     set({
@@ -45,6 +48,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       isAuthenticated: !!session,
       error: null,
       authError: null,
+      restoreError: null,
     }),
 
   setLoading: (isLoading) => set({ isLoading }),
@@ -63,6 +67,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       isLoading: false,
       error: null,
       authError: null,
+      restoreError: null,
     }),
 
   logout: async () => {
@@ -73,6 +78,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
         isAuthenticated: false,
         error: null,
         authError: null,
+        restoreError: null,
       });
     }
     return { success: clearResult.success };
@@ -86,12 +92,14 @@ export const useAuthStore = create<AuthState>()((set) => ({
         isInitialized: true,
         session: result.session,
         isAuthenticated: true,
+        restoreError: null,
       });
     } else {
       set({
         isInitialized: true,
         isAuthenticated: false,
         session: null,
+        restoreError: result.error ?? null,
       });
     }
   },
