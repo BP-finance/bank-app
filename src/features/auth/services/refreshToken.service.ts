@@ -6,7 +6,7 @@
  * 1. Obter refreshToken do sessionStorage
  * 2. Chamar authDataSource.refreshTokens(refreshToken)
  * 3. Mapear RefreshApiData para RefreshSuccess
- * 4. Persistir novos tokens via sessionManager.persist()
+ * 4. Persistir/aplicar novos tokens via sessionManager.applyRefreshedTokens()
  * 5. Retornar RefreshSuccess
  *
  * A interface AuthDataSource será estendida com refreshTokens()
