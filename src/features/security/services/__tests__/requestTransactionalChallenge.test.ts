@@ -39,6 +39,7 @@ import {
   resolveTransactionalChallenge,
   cancelTransactionalChallenge,
 } from "../requestTransactionalChallenge";
+import { validatePin } from "../validatePin.service";
 import { setupPin } from "../setupPin.service";
 import { useSecurityStore } from "../../store";
 
@@ -149,6 +150,23 @@ describe("requestTransactionalChallenge", () => {
     requestTransactionalChallenge(baseRequest);
     cancelTransactionalChallenge();
     expect(useSecurityStore.getState().currentChallenge).toBeNull();
+  });
+
+  it("cancelamento não incrementa tentativas", async () => {
+    await setupPin({
+      pin: "123456",
+      confirmation: "123456",
+      accountId: "acc-1",
+    });
+    const promise = requestTransactionalChallenge(baseRequest);
+    while (!useSecurityStore.getState().currentChallenge) {
+      await new Promise((r) => setImmediate(r));
+    }
+    cancelTransactionalChallenge();
+    await promise;
+    const result = await validatePin({ pin: "000000", accountId: "acc-1" });
+    expect(result.status).toBe("invalid");
+    expect("remainingAttempts" in result && result.remainingAttempts).toBe(2);
   });
 
   it("store não guarda segredo", () => {
