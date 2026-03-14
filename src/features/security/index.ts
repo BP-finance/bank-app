@@ -12,7 +12,11 @@
 
 export { useSecurityStore } from "./store";
 export { useSecurity } from "./hooks";
-export { requestTransactionalChallenge, clearSecurityState } from "./services";
+export {
+  requestTransactionalChallenge,
+  clearSecurityState,
+  type ClearSecurityStateOptions,
+} from "./services";
 export { SecurityErrorCode } from "./errors";
 
 export type {
@@ -22,9 +26,7 @@ export type {
   SecurityChallengeRequest,
   SecurityChallengeResult,
   SecurityChallengeStatus,
-  TransactionalCredentialMethod,
   CredentialConfigurationStatus,
-  SecurityCredentialStatus,
   UserWithPinStatus,
   PinValidationResult,
   InvalidAttemptsState,

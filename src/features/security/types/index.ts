@@ -19,12 +19,7 @@ export type {
   UnavailableResult,
 } from "./security-result.types";
 
-export type {
-  TransactionalCredentialMethod,
-  CredentialConfigurationStatus,
-  SecurityCredentialStatus,
-  UserWithPinStatus,
-} from "./security-credential.types";
+export type { CredentialConfigurationStatus, UserWithPinStatus } from "./security-credential.types";
 
 export type {
   PinValidationResult,
