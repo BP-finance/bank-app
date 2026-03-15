@@ -5,13 +5,13 @@
  */
 
 import { PinSetupScreen } from "@/src/features/security";
-import { useAuthStore } from "@/src/features/auth";
+import { useCurrentAccount } from "@/src/features/current-account";
 import { useRouter } from "expo-router";
 
 export default function PinSetupPage() {
   const router = useRouter();
-  const session = useAuthStore((s) => s.session);
-  const accountId = session?.user?.id ?? "";
+  const { currentAccount } = useCurrentAccount();
+  const accountId = currentAccount?.id ?? "";
 
   return (
     <PinSetupScreen

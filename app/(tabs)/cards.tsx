@@ -1,5 +1,5 @@
 import { navigateToPinSetup } from "@/src/features/pix/utils/handleNotConfiguredResult";
-import { useAuthStore } from "@/src/features/auth/store/useAuthStore";
+import { useCurrentAccount } from "@/src/features/current-account";
 import { sendPixWithSecurityChallengeUseCase } from "@/src/features/pix/useCases/sendPixWithSecurityChallengeUseCase";
 import { getChallengeResultMessage } from "@/src/features/pix/utils/challengeResultMessages";
 import LottieAnimation from "@/src/shared/components/animations/LottieAnimation";
@@ -12,8 +12,8 @@ import { useRouter } from "expo-router";
 
 export default function Cards() {
   const router = useRouter();
-  const session = useAuthStore((s) => s.session);
-  const accountId = session?.user?.id ?? "";
+  const { currentAccount } = useCurrentAccount();
+  const accountId = currentAccount?.id ?? "";
 
   async function handleConfirm() {
     if (!accountId) {

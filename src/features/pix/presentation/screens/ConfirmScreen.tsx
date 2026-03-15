@@ -16,7 +16,7 @@
  */
 
 import LoadingOverlay from "@/src/features/account/components/feedback/LoadingOverlay";
-import { useAuthStore } from "@/src/features/auth/store/useAuthStore";
+import { useCurrentAccount } from "@/src/features/current-account";
 import { useSecurityStore } from "@/src/features/security";
 import { sendPixWithSecurityChallengeUseCase } from "@/src/features/pix/useCases/sendPixWithSecurityChallengeUseCase";
 import { getChallengeResultMessage } from "@/src/features/pix/utils/challengeResultMessages";
@@ -41,8 +41,8 @@ export default function PixConfirmScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const session = useAuthStore((s) => s.session);
-  const accountId = session?.user?.id ?? "";
+  const { currentAccount } = useCurrentAccount();
+  const accountId = currentAccount?.id ?? "";
 
   const currentChallenge = useSecurityStore((s) => s.currentChallenge);
   const showChallenge = currentChallenge !== null;

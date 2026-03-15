@@ -1,0 +1,155 @@
+================================================================================
+TASK 0.2 — Separar userId de accountId — Plano de execução
+================================================================================
+Documentos lidos: user-account-identity-decision, feature-boundaries,
+task-0.2-user-account-separation, task-0.2-review-checklist, current-state-map.
+Código inspecionado: auth (types, api types, mapper, store), pin-setup,
+ConfirmScreen, cards, security types, sendPixWithSecurityChallengeUseCase.
+================================================================================
+
+1. ESTADO ATUAL (resumo)
+------------------------
+- AUTH: session.user (AuthenticatedUser) com id, nome, email, documento, tipoConta, onboardingStatus.
+  Não existe currentAccount em AUTH.
+- Três pontos derivam accountId da sessão:
+  • app/security/pin-setup.tsx     → accountId = session?.user?.id ?? ""
+  • src/features/pix/.../ConfirmScreen.tsx → idem
+  • app/(tabs)/cards.tsx           → idem
+- SECURITY e Pix já usam accountId corretamente nos contratos (SetupPinInput, ValidatePinInput,
+  SecurityChallengeRequest, SendPixProtectedInput). A mudança é só na ORIGEM do valor.
+- Não existe src/features/current-account.
+
+2. ARQUIVOS A CRIAR
+-------------------
+Todos em src/features/current-account/:
+
+2.1 types/current-account.types.ts
+    - Interface CurrentAccount com:
+      id: string
+      source: "session-fallback" | "backend"
+      ownerUserId?: string
+      personType?: "PF" | "PJ"
+    - Nada mais; sem inventar payload Idez.
+
+2.2 mappers/sessionCurrentAccountFallback.mapper.ts
+    - Função que recebe AuthSession | null (ou AuthenticatedUser) e retorna CurrentAccount | null.
+    - Único lugar onde session.user.id é usado para montar conta atual.
+    - Comentário no topo: fallback temporário; origem futura = Get Current Account (Idez);
+      não espalhar esta equivalência pelo app.
+
+2.3 services/resolveCurrentAccount.ts
+    - resolveCurrentAccount(): obtém sessão (useAuthStore.getState().session), chama o mapper,
+      retorna CurrentAccount | null.
+    - Depende apenas do contrato público de AUTH (leitura de session). Não alterar auth.
+
+2.4 hooks/useCurrentAccount.ts
+    - useCurrentAccount(): hook que usa useAuthStore((s) => s.session) para reatividade,
+      chama o mapper com a session atual, retorna { currentAccount: CurrentAccount | null }.
+    - Consumidores usam currentAccount?.id; não acessam session.user.id para accountId.
+
+2.5 index.ts (barrel)
+    - Exportar: CurrentAccount, resolveCurrentAccount, useCurrentAccount.
+    - Opcional: exportar o mapper se algum teste precisar; caso contrário manter interno.
+
+2.6 README.md (curto) ou comentário em index.ts
+    - Texto curto: este módulo é o owner de currentAccount; fallback atual = sessão;
+      futura origem = Get Current Account (Idez); não usar session.user.id como accountId fora daqui.
+
+3. ARQUIVOS A MODIFICAR (apenas 3)
+----------------------------------
+
+3.1 app/security/pin-setup.tsx
+    - Remover: const accountId = session?.user?.id ?? "";
+    - Adicionar: import useCurrentAccount de @/src/features/current-account.
+    - Usar: const { currentAccount } = useCurrentAccount(); accountId = currentAccount?.id ?? "";
+    - Manter useAuthStore apenas se a tela precisar de session para outra coisa; senão,
+      pode remover o import de useAuthStore se não for mais usado neste arquivo.
+    - Passar accountId para PinSetupScreen como hoje (contrato SECURITY não muda).
+
+3.2 src/features/pix/presentation/screens/ConfirmScreen.tsx
+    - Remover: const accountId = session?.user?.id ?? "";
+    - Adicionar: import useCurrentAccount de @/src/features/current-account.
+    - Usar: const { currentAccount } = useCurrentAccount(); accountId = currentAccount?.id ?? "";
+    - Manter session só se for usado para mais alguma coisa (verificar: não parece);
+      se session for usado só para accountId, remover useAuthStore deste arquivo.
+
+3.3 app/(tabs)/cards.tsx
+    - Mesma alteração: useCurrentAccount(), currentAccount?.id ?? "" para accountId.
+    - Remover derivação de accountId a partir de session.
+
+4. O QUE NÃO ALTERAR
+--------------------
+- useAuthStore, session, token, logout, restore, refresh.
+- security-setup.types, security-validate-pin.types, security-challenge.types.
+- requestTransactionalChallenge, sendPixWithSecurityChallengeUseCase (assinaturas e uso de accountId).
+- account-center, src/features/account, app/(tabs)/account.tsx.
+- Nenhum contrato que já use accountId corretamente (só mudar a origem nos 3 callers acima).
+
+5. MICROAJUSTES POSSÍVEIS
+-------------------------
+
+5.1 Import de AUTH dentro de current-account
+    - resolveCurrentAccount e useCurrentAccount precisam da sessão.
+    - Opção A: importar useAuthStore de @/src/features/auth (barrel). Recomendado para não
+      acoplar ao caminho interno da store.
+    - Opção B: importar de path relativo se current-account ficar junto de auth na árvore.
+    - Resolução: usar @/src/features/auth para useAuthStore e tipos AuthSession/AuthenticatedUser
+      importados do barrel de auth, para manter dependência apenas do contrato público.
+
+5.2 Tipo do mapper
+    - sessionCurrentAccountFallback(session: AuthSession | null): CurrentAccount | null.
+    - Se session for null, retornar null. Se session.user existir, montar CurrentAccount com
+      id: session.user.id, source: "session-fallback", ownerUserId: session.user.id,
+      personType: session.user.tipoConta (já é "PF"|"PJ"). Documentar que isso é temporário.
+
+5.3 Hook useCurrentAccount e sessão null
+    - Quando session for null, currentAccount deve ser null (não objeto com id "").
+    - Assim, callers que fazem currentAccount?.id ?? "" ficam corretos (string vazia quando
+      não há conta), alinhado ao comportamento atual de accountId vazio quando não logado.
+
+5.4 cards.tsx e ConfirmScreen importam useAuthStore de store
+    - Hoje: import { useAuthStore } from "@/src/features/auth/store/useAuthStore".
+    - Após a mudança: podem importar useCurrentAccount de @/src/features/current-account.
+    - Se não usarem mais session nesses arquivos, remover import de useAuthStore neles.
+    - Padrão do projeto: outros arquivos usam @/src/features/auth (barrel). Não é obrigatório
+      padronizar na Task 0.2; apenas não derivar accountId da sessão.
+
+5.5 Barrel de current-account
+    - Exportar: type CurrentAccount, resolveCurrentAccount, useCurrentAccount.
+    - Não exportar o mapper no barrel se não for necessário fora do módulo (recomendado:
+      manter mapper interno para não incentivar uso do fallback fora do módulo).
+
+5.6 README vs comentário
+    - Mínimo: comentário em sessionCurrentAccountFallback.mapper.ts e uma linha no index.ts
+      ou README.md do módulo. README curto (5–10 linhas) é suficiente para “owner de
+      currentAccount; fallback temporário; futura origem Get Current Account”.
+
+6. ORDEM DE EXECUÇÃO SUGERIDA
+-----------------------------
+1) Criar types/current-account.types.ts
+2) Criar mappers/sessionCurrentAccountFallback.mapper.ts (e comentário do fallback)
+3) Criar services/resolveCurrentAccount.ts
+4) Criar hooks/useCurrentAccount.ts
+5) Criar index.ts (barrel) e README ou comentário do módulo
+6) Alterar app/security/pin-setup.tsx
+7) Alterar src/features/pix/presentation/screens/ConfirmScreen.tsx
+8) Alterar app/(tabs)/cards.tsx
+9) Rodar build/lint e testes existentes; não quebrar SECURITY/Pix.
+
+7. CRITÉRIO DE CONCLUSÃO (checklist rápido)
+-------------------------------------------
+- Owner explícito de currentAccount existe em src/features/current-account.
+- Fallback em um único lugar (mapper + uso apenas em resolveCurrentAccount/useCurrentAccount).
+- pin-setup, ConfirmScreen e cards não usam mais session.user.id como accountId.
+- currentUser continua vindo de AUTH; currentAccount só do novo módulo.
+- SECURITY e Pix continuam account-scoped; apenas a origem do accountId mudou nos 3 callers.
+
+8. DIVERGÊNCIAS DOC vs CÓDIGO
+-----------------------------
+- Nenhuma divergência relevante encontrada: os três arquivos citados na doc de fato
+  usam accountId = session?.user?.id ?? "" e os contratos de SECURITY/Pix já usam
+  accountId corretamente. Plano segue o código como fonte de verdade.
+
+================================================================================
+Fim do plano. Aguardando permissão para implementar.
+================================================================================
