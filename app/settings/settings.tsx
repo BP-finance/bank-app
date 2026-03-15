@@ -1,23 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+/**
+ * Não é segunda área de Conta/Segurança; alias para a superfície oficial /user.
+ */
+import { Href, Redirect } from "expo-router";
 
 export default function SettingsScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Configuraçoes</Text>
-    </View>
-  );
+  return <Redirect href={"/user" as Href} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0F172A",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    color: "#FFF",
-    fontSize: 22,
-    fontWeight: "600",
-  },
-});

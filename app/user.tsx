@@ -1,25 +1,8 @@
-import { LogoutButton } from "@/src/components/debug/LogoutButton";
-import { StyleSheet, Text, View } from "react-native";
+/**
+ * Superfície oficial da área Conta / Segurança. Rota em app/ apenas delega; sem lógica de domínio aqui.
+ */
+import { AccountCenterScreen } from "@/src/features/account-center";
 
 export default function User() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Perfil do Usuário</Text>
-      <LogoutButton />
-    </View>
-  );
+  return <AccountCenterScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0F172A",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    color: "#FFF",
-    fontSize: 22,
-    fontWeight: "600",
-  },
-});
